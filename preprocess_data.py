@@ -10,7 +10,7 @@ def clean_text(text):
     
     
     # cleaning "unnessesary" characters
-    text = re.sub(r'[^A-Za-z0-9\s]', '', text)      # Remove special characters
+    text = re.sub(r'[^A-Za-z0-9\s]', '', text)      # Remove all special characters
     text = re.sub(r'\d+', '', text)                 # Remove numbers
     text = re.sub(r'\b[a-zA-Z]\b', '', text)        # Remove single characters
     text = re.sub(r'\s+', ' ', text)                # Substitute multiple spaces with single space
@@ -23,3 +23,15 @@ def clean_text(text):
     words = [word for word in words if word not in stop_words]  # Remove stopwords
     
     return words
+
+
+def lemmatize_text(text):
+    
+    lemmatizer = WordNetLemmatizer()
+
+    return [lemmatizer.lemmatize(word) for word in text]
+    
+    #train_data['lemmatized_tokens'] = train_data['cleaned_text'].apply(lambda x: [lemmatizer.lemmatize(token) for token in x])
+    #test_data['lemmatized_tokens'] = test_data['cleaned_text'].apply(lambda x: [lemmatizer.lemmatize(token) for token in x])
+
+    #print(train_data['lemmatized_tokens'])
