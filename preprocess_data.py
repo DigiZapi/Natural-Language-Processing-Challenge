@@ -13,7 +13,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 def clean_text(text):
     
-    
     # cleaning "unnessesary" characters
     text = re.sub(r'[^A-Za-z0-9\s]', '', text)      # Remove all special characters
     text = re.sub(r'\d+', '', text)                 # Remove numbers
