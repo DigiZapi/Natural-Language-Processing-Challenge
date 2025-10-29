@@ -5,9 +5,13 @@ from nltk.tokenize import word_tokenize
 import re
 import string
 from nltk.corpus import stopwords
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+
 
 def clean_text(text):
-    
     
     # cleaning "unnessesary" characters
     text = re.sub(r'[^A-Za-z0-9\s]', '', text)      # Remove all special characters
@@ -27,11 +31,27 @@ def clean_text(text):
 
 def lemmatize_text(text):
     
+    # init lemmatizer
     lemmatizer = WordNetLemmatizer()
 
-    return [lemmatizer.lemmatize(word) for word in text]
-    
-    #train_data['lemmatized_tokens'] = train_data['cleaned_text'].apply(lambda x: [lemmatizer.lemmatize(token) for token in x])
-    #test_data['lemmatized_tokens'] = test_data['cleaned_text'].apply(lambda x: [lemmatizer.lemmatize(token) for token in x])
+    # lemmatize and convert from list to string
+    return ' '.join([lemmatizer.lemmatize(word) for word in text])
 
-    #print(train_data['lemmatized_tokens'])
+
+
+def tfidf_vectorization(data):
+    
+    # Initialize the TfidfVectorizer
+    vectorizer = TfidfVectorizer(min_df = 0.1)
+  
+    tfidf_matrix = vectorizer.fit_transform(data)
+    return tfidf_matrix
+
+
+
+def count_vectorizer(data):
+    
+    bow_vect = CountVectorizer(max_features=1000)
+
+    return bow_vect.fit_transform(data)
+
