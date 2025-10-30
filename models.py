@@ -17,15 +17,17 @@ from sklearn.preprocessing import StandardScaler
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
-    model_randomf = RandomForestClassifier(n_estimators=256, random_state=42)
+    model = RandomForestClassifier(n_estimators=128, random_state=42)
 
-    model_randomf.fit(tfidf_matrix_train, data_train_label)
-    pred = model_randomf.predict(tfidf_matrix_val)
+    model.fit(tfidf_matrix_train, data_train_label)
+    pred = model.predict(tfidf_matrix_val)
 
     # Evaluate random forest
     print("Random forest model")
     print("accuracy:", metrics.accuracy_score(data_val_label, pred))
     print("Classification report:\n", metrics.classification_report(data_val_label, pred))
+
+    return model
 
 
 # Multinomial Naive Bayes (MultinomialNB) classifier
@@ -40,6 +42,8 @@ def model_multinominalNB_train(data_train, data_val, data_train_label, data_val_
     print("Test")
     print("accuracy:", metrics.accuracy_score(data_val_label, pred))
     print("Classification report:\n", metrics.classification_report(data_val_label, pred))
+
+    return model
 
 
 # Simple Feedforward NN
@@ -74,6 +78,8 @@ def model_sfnn_train(x_train, y_train, x_val, y_val):
     loss, accuracy = model.evaluate(x_val_dense, y_val)
     print(f'Test Accuracy: {accuracy:.4f}')
 
+    return model
+
 """
 LOGISTIC REGRESSION 
 """
@@ -102,10 +108,15 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
     # Classification report
     print("\nClassification Report:\n", classification_report(y_val, y_val_pred))
 
+    return model
+
 """
 NAIVES BAYES
 """
+<<<<<<< HEAD
 
+=======
+>>>>>>> georg_imp
 def model_naives_bayes(x_train, y_train, x_val, y_val):
 
     nb = MultinomialNB(alpha=1.0)
@@ -121,3 +132,19 @@ def model_naives_bayes(x_train, y_train, x_val, y_val):
 
     print(f"\n Validation Accuracy:{acc:4f}\n")
     print("classification_report:\n", classification_report(y_val, y_val_pred, digits=4))
+
+    return nb
+
+
+
+def predict_values(model, test_data, df_test, filepath):
+    
+    pred = model.predict(test_data)
+
+    df_write = pd.DataFrame(columns=["label", "text"])
+    df_write['text'] = df_test['text']
+    df_write['label'] = pred
+
+    df_write.to_csv(filepath, index=False, header=False) 
+
+    print("✅ Predictions saved to:", filepath)
