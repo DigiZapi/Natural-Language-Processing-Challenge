@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
-    model = RandomForestClassifier(n_estimators=256, random_state=42)
+    model = RandomForestClassifier(n_estimators=128, random_state=42)
 
     model.fit(tfidf_matrix_train, data_train_label)
     pred = model.predict(tfidf_matrix_val)
@@ -137,8 +137,10 @@ def predict_values(model, test_data, df_test, filepath):
     
     pred = model.predict(test_data)
 
-    df_write = pd.DataFrame(columns=["Label", "Text"])
+    df_write = pd.DataFrame(columns=["label", "text"])
     df_write['text'] = df_test['text']
     df_write['label'] = pred
 
-    df_write.to_csv(filepath, index=False, header=False)  
+    df_write.to_csv(filepath, index=False, header=False) 
+
+    print("✅ Predictions saved to:", filepath)
