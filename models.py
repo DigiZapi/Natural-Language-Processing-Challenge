@@ -87,17 +87,17 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
     x_val_dense = x_val.toarray()
 
     # Train the classifier
-    model.fit(X_train_tfidf, y_train)
+    model.fit(x_train, y_train)
 
     # Predict classes and get training accuracy
-    y_train_pred = model.predict(X_train_tfidf)
+    y_train_pred = model.predict(x_train)
     train_accuracy = accuracy_score(y_train, y_train_pred)
-    print("Train accuracy:", train_accuracy)
+    print(f"\nTrain Accuracy: {train_accuracy * 100:.2f}%")
 
     # Predict classes for unseen validation set and get validation accuracy
-    y_val_pred = model.predict(X_val_tfidf)
+    y_val_pred = model.predict(x_val)
     val_accuracy = accuracy_score(y_val, y_val_pred)
-    print("Validation accuracy:", val_accuracy)
+    print(f"\nValidation Accuracy: {val_accuracy * 100:.2f}%")
 
     # Classification report
     print("\nClassification Report:\n", classification_report(y_val, y_val_pred))
@@ -105,7 +105,6 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
 """
 NAIVES BAYES
 """
-
 
 def model_naives_bayes(x_train, y_train, x_val, y_val):
 
