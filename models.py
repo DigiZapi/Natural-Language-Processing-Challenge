@@ -1,11 +1,12 @@
 import pandas as pd
 from sklearn import metrics
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
-
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
@@ -78,6 +79,36 @@ def model_sfnn_train(x_train, y_train, x_val, y_val):
     loss, accuracy = model.evaluate(x_val_dense, y_val)
     print(f'Test Accuracy: {accuracy:.4f}')
 
+"""
+LOGISTIC REGRESSION 
+"""
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+def model_logistic_regression(x_train, y_train, x_val, y_val):
+
+    # Initialize the classifier
+    model = LogisticRegression(max_iter=1000, random_state=42, class_weight='balanced')
+
+    # Convert your TF-IDF matrices to dense arrays
+    x_train_dense = x_train.toarray()
+    x_val_dense = x_val.toarray()
+
+    # Train the classifier
+    model.fit(x_train, y_train)
+
+    # Predict classes and get training accuracy
+    y_train_pred = model.predict(x_train)
+    train_accuracy = accuracy_score(y_train, y_train_pred)
+    print("Train accuracy:", train_accuracy)
+
+    # Predict classes for unseen validation set and get validation accuracy
+    y_val_pred = model.predict(x_val)
+    val_accuracy = accuracy_score(y_val, y_val_pred)
+    print("Validation accuracy:", val_accuracy)
+
+    # Classification report
+    print("\nClassification Report:\n", classification_report(y_val, y_val_pred))
     return model
 
 
