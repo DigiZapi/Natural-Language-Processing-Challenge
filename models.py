@@ -13,6 +13,7 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 
+
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
@@ -64,11 +65,10 @@ def model_sfnn_train(x_train, y_train, x_val, y_val):
     model.add(Dense(1, activation='sigmoid'))  # Output layer for binary classification
 
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.01), metrics=['accuracy'])
 
     # Train model
-    history = model.fit(x_train_dense, y_train, epochs=10, batch_size=512, validation_split=0.3, verbose=1)
-
+    history = model.fit(x_train_dense, y_train, epochs=10, batch_size=64, validation_split=0.2, verbose=1)
     # Evaluate
     loss, accuracy = model.evaluate(x_val_dense, y_val)
     print(f'Test Accuracy: {accuracy:.4f}')
