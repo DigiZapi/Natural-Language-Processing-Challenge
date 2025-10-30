@@ -17,15 +17,17 @@ from sklearn.preprocessing import StandardScaler
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
-    model_randomf = RandomForestClassifier(n_estimators=256, random_state=42)
+    model = RandomForestClassifier(n_estimators=256, random_state=42)
 
-    model_randomf.fit(tfidf_matrix_train, data_train_label)
-    pred = model_randomf.predict(tfidf_matrix_val)
+    model.fit(tfidf_matrix_train, data_train_label)
+    pred = model.predict(tfidf_matrix_val)
 
     # Evaluate random forest
     print("Random forest model")
     print("accuracy:", metrics.accuracy_score(data_val_label, pred))
     print("Classification report:\n", metrics.classification_report(data_val_label, pred))
+
+    return model
 
 
 # Multinomial Naive Bayes (MultinomialNB) classifier
@@ -40,6 +42,8 @@ def model_multinominalNB_train(data_train, data_val, data_train_label, data_val_
     print("Test")
     print("accuracy:", metrics.accuracy_score(data_val_label, pred))
     print("Classification report:\n", metrics.classification_report(data_val_label, pred))
+
+    return model
 
 
 # Simple Feedforward NN
@@ -69,8 +73,21 @@ def model_sfnn_train(x_train, y_train, x_val, y_val):
 
     # Train model
     history = model.fit(x_train_dense, y_train, epochs=10, batch_size=64, validation_split=0.2, verbose=1)
+    
     # Evaluate
     loss, accuracy = model.evaluate(x_val_dense, y_val)
     print(f'Test Accuracy: {accuracy:.4f}')
 
+    return model
+
+
+def predict_values(model, test_data, df_test, filepath):
     
+    pred = model.predict(test_data)
+
+    df_write = pd.DataFrame(columns=["Label", "Text"])
+    df_write['text'] = df_test['text']
+    df_write['label'] = pred
+
+    df_write.to_csv(filepath, index=False, header=False)  
+
