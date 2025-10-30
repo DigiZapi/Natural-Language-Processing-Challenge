@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn import metrics
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -14,21 +14,18 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 
-
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
-    model = RandomForestClassifier(n_estimators=256, random_state=42)
+    model_randomf = RandomForestClassifier(n_estimators=256, random_state=42)
 
-    model.fit(tfidf_matrix_train, data_train_label)
-    pred = model.predict(tfidf_matrix_val)
+    model_randomf.fit(tfidf_matrix_train, data_train_label)
+    pred = model_randomf.predict(tfidf_matrix_val)
 
     # Evaluate random forest
     print("Random forest model")
     print("accuracy:", metrics.accuracy_score(data_val_label, pred))
     print("Classification report:\n", metrics.classification_report(data_val_label, pred))
-
-    return model
 
 
 # Multinomial Naive Bayes (MultinomialNB) classifier
@@ -43,8 +40,6 @@ def model_multinominalNB_train(data_train, data_val, data_train_label, data_val_
     print("Test")
     print("accuracy:", metrics.accuracy_score(data_val_label, pred))
     print("Classification report:\n", metrics.classification_report(data_val_label, pred))
-
-    return model
 
 
 # Simple Feedforward NN
@@ -70,11 +65,11 @@ def model_sfnn_train(x_train, y_train, x_val, y_val):
     model.add(Dense(1, activation='sigmoid'))  # Output layer for binary classification
 
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.01), metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
 
     # Train model
-    history = model.fit(x_train_dense, y_train, epochs=10, batch_size=64, validation_split=0.2, verbose=1)
-    
+    history = model.fit(x_train_dense, y_train, epochs=10, batch_size=512, validation_split=0.3, verbose=1)
+
     # Evaluate
     loss, accuracy = model.evaluate(x_val_dense, y_val)
     print(f'Test Accuracy: {accuracy:.4f}')
@@ -82,9 +77,6 @@ def model_sfnn_train(x_train, y_train, x_val, y_val):
 """
 LOGISTIC REGRESSION 
 """
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
-
 def model_logistic_regression(x_train, y_train, x_val, y_val):
 
     # Initialize the classifier
@@ -95,30 +87,38 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
     x_val_dense = x_val.toarray()
 
     # Train the classifier
-    model.fit(x_train, y_train)
+    model.fit(X_train_tfidf, y_train)
 
     # Predict classes and get training accuracy
-    y_train_pred = model.predict(x_train)
+    y_train_pred = model.predict(X_train_tfidf)
     train_accuracy = accuracy_score(y_train, y_train_pred)
     print("Train accuracy:", train_accuracy)
 
     # Predict classes for unseen validation set and get validation accuracy
-    y_val_pred = model.predict(x_val)
+    y_val_pred = model.predict(X_val_tfidf)
     val_accuracy = accuracy_score(y_val, y_val_pred)
     print("Validation accuracy:", val_accuracy)
 
     # Classification report
     print("\nClassification Report:\n", classification_report(y_val, y_val_pred))
-    return model
+
+"""
+NAIVES BAYES
+"""
 
 
-def predict_values(model, test_data, df_test, filepath):
-    
-    pred = model.predict(test_data)
+def model_naives_bayes(x_train, y_train, x_val, y_val):
 
-    df_write = pd.DataFrame(columns=["Label", "Text"])
-    df_write['text'] = df_test['text']
-    df_write['label'] = pred
+    nb = MultinomialNB(alpha=1.0)
+    nb.fit(x_train, y_train)
 
-    df_write.to_csv(filepath, index=False, header=False)  
+    y_val_pred = nb.predict(x_val)
+    acc = accuracy_score(y_val, y_val_pred)
 
+    # Predict classes and get training accuracy
+    y_train_pred = nb.predict(x_train)
+    train_accuracy = accuracy_score(y_train, y_train_pred)
+    print("Train accuracy:", train_accuracy)
+
+    print(f"\n Validation Accuracy:{acc:4f}\n")
+    print("classification_report:\n", classification_report(y_val, y_val_pred, digits=4))

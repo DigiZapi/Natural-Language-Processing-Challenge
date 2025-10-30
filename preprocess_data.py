@@ -8,8 +8,6 @@ from nltk.corpus import stopwords
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
-import nltk
-from nltk.util import bigrams
 
 
 
@@ -40,15 +38,22 @@ def lemmatize_text(text):
     return ' '.join([lemmatizer.lemmatize(word) for word in text])
 
 
-
-def tfidf_vectorization(data, min_df, ngram_range):
+#consider removing
+def tfidf_vec_fit_transform(data):
     
     # Initialize the TfidfVectorizer
-    vectorizer = TfidfVectorizer(ngram_range=ngram_range, min_df = min_df)
+    vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
   
     tfidf_matrix = vectorizer.fit_transform(data)
     return tfidf_matrix
 
+#consider removing
+def tfidf_vec_transform(data):
+    # Initialize the TfidfVectorizer
+    vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
+
+    tfidf_matrix = vectorizer.transform(data)
+    return tfidf_matrix
 
 
 def count_vectorizer(data):
@@ -56,3 +61,4 @@ def count_vectorizer(data):
     bow_vect = CountVectorizer(max_features=1000)
 
     return bow_vect.fit_transform(data)
+
