@@ -8,16 +8,18 @@ from sklearn.pipeline import make_pipeline
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.regularizers import l2
 
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
-    model = RandomForestClassifier(n_estimators=128, random_state=42)
+    model = RandomForestClassifier(n_estimators=256, random_state=42)
 
     model.fit(tfidf_matrix_train, data_train_label)
     pred = model.predict(tfidf_matrix_val)
@@ -49,36 +51,44 @@ def model_multinominalNB_train(data_train, data_val, data_train_label, data_val_
 # Simple Feedforward NN
 def model_sfnn_train(x_train, y_train, x_val, y_val):
 
-    # Convert your TF-IDF matrices to dense arrays
+    # Convert sparse TF-IDF to dense only if needed
     x_train_dense = x_train.toarray()
     x_val_dense = x_val.toarray()
 
-    #scaler = StandardScaler()gt
-    #x_train_dense = scaler.fit_transform(x_train_dense)
-    #x_val_dense = scaler.transform(x_val_dense)
+    input_dim = x_train_dense.shape[1]
 
-    #y_train_cat = to_categorical(y_train)
-    #y_val_cat = to_categorical(y_val)
+    model = Sequential([
+        Dense(512, activation='relu', input_dim=input_dim, kernel_regularizer=l2(0.001)),
+        BatchNormalization(),
+        Dropout(0.4),
 
-    # Build simple feedforward NN
-    model = Sequential()
-    model.add(Dense(1028, input_dim=x_train.shape[1], activation='relu'))
-    model.add(Dense(1028, input_dim=x_train.shape[1], activation='relu'))
-    model.add(Dense(1028, input_dim=x_train.shape[1], activation='relu'))
-    model.add(Dense(1024, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))  # Output layer for binary classification
+        Dense(256, activation='relu', kernel_regularizer=l2(0.001)),
+        BatchNormalization(),
+        Dropout(0.4),
 
-    # Compile model
-    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
+        Dense(128, activation='relu', kernel_regularizer=l2(0.001)),
+        Dropout(0.3),
 
-    # Train model
-    history = model.fit(x_train_dense, y_train, epochs=10, batch_size=512, validation_split=0.3, verbose=1)
+        Dense(1, activation='sigmoid')
+    ])
 
-    # Evaluate
-    loss, accuracy = model.evaluate(x_val_dense, y_val)
-    print(f'Test Accuracy: {accuracy:.4f}')
+    optimizer = Adam(learning_rate=0.0005)
+    model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
-    return model
+    # Early stopping to avoid overfitting
+    callbacks = [
+        EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
+        ModelCheckpoint('best_sfnn_model.keras', monitor='val_loss', save_best_only=True)
+    ]
+
+    history = model.fit(
+        x_train_dense, y_train,
+        epochs=10,
+        batch_size=128,
+        validation_data=(x_val_dense, y_val),
+        callbacks=callbacks,
+        verbose=1
+    )
 
 """
 LOGISTIC REGRESSION 
@@ -113,10 +123,6 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
 """
 NAIVES BAYES
 """
-<<<<<<< HEAD
-
-=======
->>>>>>> georg_imp
 def model_naives_bayes(x_train, y_train, x_val, y_val):
 
     nb = MultinomialNB(alpha=1.0)
