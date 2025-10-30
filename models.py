@@ -3,6 +3,7 @@ from sklearn import metrics
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 from scipy.sparse import csr_matrix
@@ -20,7 +21,7 @@ from sklearn.decomposition import TruncatedSVD
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
     # Random forest model
-    model = RandomForestClassifier(n_estimators=80, random_state=42)
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
 
     model.fit(tfidf_matrix_train, data_train_label)
     pred_train = model.predict(tfidf_matrix_train)
@@ -60,7 +61,7 @@ def model_multinominalNB_train(data_train, data_val, data_train_label, data_val_
 
 
 # Simple Feedforward NN
-def model_sfnn_train(tfidf_train, y_train, tfidf_val, y_val, n_components=1000):
+def model_sfnn_train(tfidf_train, y_train, tfidf_val, y_val, n_components=2000):
     
     # TruncatedSVD with randomized algorithm for large sparse matrices
     svd = TruncatedSVD(n_components=n_components, algorithm='randomized', random_state=42)
@@ -68,9 +69,9 @@ def model_sfnn_train(tfidf_train, y_train, tfidf_val, y_val, n_components=1000):
     X_val_svd = svd.transform(tfidf_val)
 
     model = Sequential([
-        Dense(256, activation='relu', input_shape=(n_components,)),
-        Dropout(0.3),
-        Dense(128, activation='relu'),
+        Dense(512, activation='relu', input_shape=(n_components,)),
+        Dropout(0.5),
+        Dense(256, activation='relu'),
         Dropout(0.5),
         Dense(1, activation='sigmoid')  # change to 'softmax' if multi-class
     ])
@@ -147,18 +148,25 @@ NAIVES BAYES
 """
 def model_naives_bayes(x_train, y_train, x_val, y_val):
 
-    nb = MultinomialNB(alpha=1.0)
-    nb.fit(x_train, y_train)
+    alphas = [0.0001, 0.001, 0.01, 0.1, 0.2, 0.5]  # list of numeric values
+    params = {'alpha': alphas}
+    
+    gs = GridSearchCV(MultinomialNB(), params, cv=5)
+    gs.fit(x_train, y_train)
+    nb = gs.best_estimator_
 
     y_val_pred = nb.predict(x_val)
-    acc = accuracy_score(y_val, y_val_pred)
-
+    
     # Predict classes and get training accuracy
     y_train_pred = nb.predict(x_train)
+    
     train_accuracy = accuracy_score(y_train, y_train_pred)
-    print("Train accuracy:", train_accuracy)
+    train_accuracy = round(train_accuracy, 2)
+    print(f"Train Accuracy:{train_accuracy:.2f}\n")
 
-    print(f"\n Validation Accuracy:{acc:4f}\n")
+    acc = accuracy_score(y_val, y_val_pred)
+    acc = round(acc, 2)
+    print(f"Validation Accuracy: {acc:.2f}\n")
     print("classification_report:\n", classification_report(y_val, y_val_pred, digits=4))
 
     return nb
