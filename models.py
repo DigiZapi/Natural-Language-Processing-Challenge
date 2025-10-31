@@ -72,7 +72,7 @@ def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_
 
 
 # Simple Feedforward NN
-def model_sfnn_train(tfidf_train, y_train, tfidf_val, y_val, n_components=2000):
+def model_sfnn_train(tfidf_train, y_train, tfidf_val, y_val, n_components=384):
     
     """
     Train a shallow feed-forward neural network on dimensionality-reduced TF-IDF features.
