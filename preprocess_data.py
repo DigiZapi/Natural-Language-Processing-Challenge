@@ -62,3 +62,20 @@ def count_vectorizer(data):
 
     return bow_vect.fit_transform(data)
 
+def show_top_words(data):
+
+    # Count word frequency
+    vectorizer = CountVectorizer()
+    X = vectorizer.fit_transform(data)
+
+    word_counts = X.sum(axis=0)
+
+    # Convert to DataFrame for sorting
+    word_freq = pd.DataFrame(
+        [(word, word_counts[0, idx]) for word, idx in vectorizer.vocabulary_.items()],
+        columns=["word", "count"]
+    )
+
+    # Sort and show Top 10
+    top10 = word_freq.sort_values(by="count", ascending=False).head(10)
+    print(top10)
