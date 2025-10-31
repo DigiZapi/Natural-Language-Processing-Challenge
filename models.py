@@ -21,6 +21,37 @@ import xgboost as xgb
 
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
+    
+    """
+    Train and evaluate a RandomForestClassifier on TF-IDF feature matrices.
+
+    This function trains a Random Forest classifier on the provided training TF-IDF
+    matrix and labels, evaluates it on both training and validation sets, and prints
+    accuracy and a classification report for performance inspection.
+
+    Parameters
+    ----------
+    tfidf_matrix_train : csr_matrix
+        Sparse TF-IDF matrix for the training data.
+    tfidf_matrix_val : csr_matrix
+        Sparse TF-IDF matrix for the validation data.
+    data_train_label : pandas.Series or array-like
+        Labels corresponding to the training data.
+    data_val_label : pandas.Series or array-like
+        Labels corresponding to the validation data.
+
+    Returns
+    -------
+    model : sklearn.ensemble.RandomForestClassifier
+        The trained Random Forest classifier.
+
+    Notes
+    -----
+    - Prints training and validation accuracy.
+    - Prints a full classification report for the validation set.
+    - Default parameters: n_estimators=100, random_state=42.
+    """
+
     # Random forest model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
 
@@ -40,30 +71,37 @@ def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_
     return model
 
 
-# Multinomial Naive Bayes (MultinomialNB) classifier
-def model_multinominalNB_train(data_train, data_val, data_train_label, data_val_label):
-    
-    # Multinomial Naive Bayes (MultinomialNB) classifier
-    model = make_pipeline(CountVectorizer(), MultinomialNB())
-    model.fit(data_train, data_train_label)
-    pred_val = model.predict(data_val)
-    pred_train = model.predict(data_train)
-
-    # print train accuracy
-    train_accuracy = accuracy_score(data_train_label, pred_train)
-    print(f"Train Accuracy: {train_accuracy * 100:.2f}%")
-
-    # Evaluate model
-    print("Test")
-    print("accuracy:", metrics.accuracy_score(data_val_label, pred_val))
-    print("Classification report:\n", metrics.classification_report(data_val_label, pred_val))
-
-    return model
-
-
 # Simple Feedforward NN
 def model_sfnn_train(tfidf_train, y_train, tfidf_val, y_val, n_components=2000):
     
+    """
+    Train a shallow feed-forward neural network on dimensionality-reduced TF-IDF features.
+
+    This function applies TruncatedSVD to reduce the dimensionality of sparse TF-IDF
+    matrices and then trains a neural network for binary text classification.
+    The model includes dropout for regularization and early stopping/checkpointing
+    to prevent overfitting.
+
+    Parameters
+    ----------
+    tfidf_train : csr_matrix
+        Sparse TF-IDF matrix for the training set.
+    y_train : array-like
+        Labels for the training data.
+    tfidf_val : csr_matrix
+        Sparse TF-IDF matrix for the validation set.
+    y_val : array-like
+        Labels for the validation data.
+    n_components : int, optional (default=2000)
+        Number of latent components to retain in TruncatedSVD.
+
+    Returns
+    -------
+    model : keras.Model
+        Trained Keras neural network model with saved best weights.
+    """
+
+
     # TruncatedSVD with randomized algorithm for large sparse matrices
     svd = TruncatedSVD(n_components=n_components, algorithm='randomized', random_state=42)
     X_train_svd = svd.fit_transform(tfidf_train)
@@ -119,6 +157,37 @@ LOGISTIC REGRESSION
 """
 def model_logistic_regression(x_train, y_train, x_val, y_val):
 
+    """
+    Train and evaluate a Logistic Regression classifier on TF-IDF feature matrices.
+
+    This function trains a balanced Logistic Regression model to handle datasets with 
+    potential class imbalance. After training, it reports accuracy on both training 
+    and validation sets, and provides a full classification report.
+
+    Parameters
+    ----------
+    x_train : csr_matrix or array-like
+        TF-IDF features for the training data.
+    y_train : array-like
+        Labels for the training set.
+    x_val : csr_matrix or array-like
+        TF-IDF features for the validation data.
+    y_val : array-like
+        Labels for the validation set.
+
+    Returns
+    -------
+    model : sklearn.linear_model.LogisticRegression
+        Trained logistic regression classifier.
+
+    Notes
+    -----
+    - Uses `class_weight='balanced'` to adjust for potential class imbalance.
+    - `max_iter=1000` increases the default iteration limit to ensure convergence.
+    - No dimensionality reduction applied; works directly with sparse TF-IDF input.
+    - Validation metrics are printed for quick evaluation.
+    """
+
     # Initialize the classifier
     model = LogisticRegression(max_iter=1000, random_state=42, class_weight='balanced')
 
@@ -148,6 +217,39 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
 NAIVES BAYES
 """
 def model_naives_bayes(x_train, y_train, x_val, y_val):
+    
+    """
+    Train and evaluate a Multinomial Naive Bayes classifier using hyperparameter tuning.
+
+    This function performs a grid search over different smoothing values (`alpha`)
+    to find the best Multinomial Naive Bayes model for sparse TF-IDF input features.
+    The optimized model is evaluated on both training and validation sets, with 
+    printed metrics for performance inspection.
+
+    Parameters
+    ----------
+    x_train : csr_matrix or array-like
+        TF-IDF matrix for the training data.
+    y_train : array-like
+        Labels for the training set.
+    x_val : csr_matrix or array-like
+        TF-IDF matrix for the validation data.
+    y_val : array-like
+        Labels for the validation set.
+
+    Returns
+    -------
+    nb : sklearn.naive_bayes.MultinomialNB
+        The best-performing Multinomial Naive Bayes classifier selected via GridSearchCV.
+
+    Notes
+    -----
+    - Uses 5-fold cross-validation to optimize `alpha`, the Laplace smoothing parameter.
+    - Printed metrics include: training accuracy, validation accuracy,
+      and a full classification report.
+    - Best estimator is stored in `gs.best_estimator_`.
+    - Assumes input feature values >= 0 (required for MultinomialNB).
+    """
 
     alphas = [0.0001, 0.001, 0.01, 0.1, 0.2, 0.5]  # list of numeric values
     params = {'alpha': alphas}
@@ -174,6 +276,41 @@ def model_naives_bayes(x_train, y_train, x_val, y_val):
 
 
 def model_xgboost(X_train, y_train, X_val, y_val):
+    
+    """
+    Train and evaluate an XGBoost classifier with hyperparameter tuning.
+
+    This function performs GridSearchCV to optimize the learning rate (eta)
+    for an XGBClassifier configured for binary classification. After training,
+    the function evaluates the model on both training and validation sets and
+    prints accuracy and a classification report.
+
+    Parameters
+    ----------
+    X_train : csr_matrix or array-like
+        TF-IDF or other numerical features for the training set.
+    y_train : array-like
+        Labels for training samples.
+    X_val : csr_matrix or array-like
+        Validation feature matrix.
+    y_val : array-like
+        Labels for validation samples.
+
+    Returns
+    -------
+    best_model : xgboost.XGBClassifier
+        Best classifier chosen by GridSearchCV.
+
+    Notes
+    -----
+    - Uses the binary:logistic objective → assumes binary classification.
+    - Hyperparameter tuning performed on `eta` (learning rate) with 5-fold CV.
+    - Accuracy and a detailed classification report are printed for validation.
+    - Parameters in `params` are passed into the XGBClassifier initialization.
+      GridSearchCV explores `eta` values defined in `params_grid`.
+    """
+    
+    
     # Convert data to DMatrix format for XGBoost
     dtrain = xgb.DMatrix(X_train, label=y_train)
     dval = xgb.DMatrix(X_val, label=y_val)
@@ -212,6 +349,37 @@ def model_xgboost(X_train, y_train, X_val, y_val):
 
 
 def predict_values(model, test_data, df_test, filepath):
+
+    """
+    Generate predictions from a trained model and save them to a CSV file.
+
+    This function uses the provided model to predict labels for the `test_data`,
+    pairs the predictions with the corresponding text from `df_test`, and writes
+    the results to a CSV file at the specified `filepath`.
+
+    Parameters
+    ----------
+    model : object
+        Trained machine learning model with a `predict` method.
+    test_data : array-like or sparse matrix
+        Feature representation of the test dataset.
+    df_test : pandas.DataFrame
+        DataFrame containing the test text in a column named 'text'.
+    filepath : str
+        File path where the CSV with predictions will be saved.
+
+    Returns
+    -------
+    None
+        Writes a CSV file containing two columns: 'label' and 'text'.
+        Prints confirmation of file saving.
+
+    Notes
+    -----
+    - CSV is saved without an index and without headers.
+    - Make sure `df_test` has a 'text' column corresponding to `test_data`.
+    - The order of predictions corresponds to the order of `df_test`.
+    """
     
     pred = model.predict(test_data)
 
