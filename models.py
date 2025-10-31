@@ -17,6 +17,7 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.regularizers import l2
 from sklearn.decomposition import TruncatedSVD
+import xgboost as xgb
 
 # Random Forest
 def model_rf_train(tfidf_matrix_train, tfidf_matrix_val, data_train_label, data_val_label):
@@ -122,8 +123,8 @@ def model_logistic_regression(x_train, y_train, x_val, y_val):
     model = LogisticRegression(max_iter=1000, random_state=42, class_weight='balanced')
 
     # Convert your TF-IDF matrices to dense arrays
-    x_train_dense = x_train.toarray()
-    x_val_dense = x_val.toarray()
+    #x_train_dense = x_train.toarray()
+    #x_val_dense = x_val.toarray()
 
     # Train the classifier
     model.fit(x_train, y_train)
@@ -170,6 +171,43 @@ def model_naives_bayes(x_train, y_train, x_val, y_val):
     print("classification_report:\n", classification_report(y_val, y_val_pred, digits=4))
 
     return nb
+
+
+def model_xgboost(X_train, y_train, X_val, y_val):
+    # Convert data to DMatrix format for XGBoost
+    dtrain = xgb.DMatrix(X_train, label=y_train)
+    dval = xgb.DMatrix(X_val, label=y_val)
+    
+    # Set parameters for XGBoost
+    params = {
+        'objective': 'binary:logistic',
+        'max_depth': 4,
+        'eval_metric': 'logloss',
+    }
+    
+    # Implement GridSearchCV for hyperparameter tuning
+    alphas = [0.01, 0.1, 0.2, 0.3, 0.4]  # Example alpha values for tuning
+    params_grid = {'eta': alphas}
+    
+    gs = GridSearchCV(xgb.XGBClassifier(**params), params_grid, cv=5)
+    
+    gs.fit(X_train, y_train)
+    best_model = gs.best_estimator_
+
+    # Make predictions
+    y_val_pred = best_model.predict(X_val)
+    y_train_pred = best_model.predict(X_train)
+
+    # Calculate and print accuracy and classification report
+    train_accuracy = accuracy_score(y_train, y_train_pred)
+    train_accuracy = round(train_accuracy, 2)
+    print(f"Train Accuracy: {train_accuracy:.2f}\n")
+    
+    val_accuracy = accuracy_score(y_val, y_val_pred)
+    val_accuracy = round(val_accuracy, 2)
+    print(f"Validation Accuracy: {val_accuracy:.2f}\n")
+    
+    print("Classification Report:\n", classification_report(y_val, y_val_pred, digits=4))
 
 
 
