@@ -1,4 +1,4 @@
-# 🧠 Fake News Detection — AI Engineering Bootcamp Project
+# Fake News Detection — AI Engineering Bootcamp Project
 
 This project explores multiple machine learning and deep learning approaches to **classify news headlines as fake or real** using natural language processing (NLP) techniques.  
 
