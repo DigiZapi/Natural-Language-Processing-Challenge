@@ -82,16 +82,6 @@ Overall, **TF-IDF vectorization with Logistic Regression or Naive Bayes** provid
 - main.ipynb / main.py # Main execution and experiments
 - README.md # Project documentation
 
-
----
-
-## 🧭 Next Steps
-
-- Explore fine-tuned transformer models (e.g. BERT, RoBERTa)
-- Optimize neural network architecture with dropout and regularization
-- Perform hyperparameter tuning for XGBoost and Logistic Regression
-- Conduct explainability analysis (e.g. SHAP, LIME)
-
 ---
 
 ## 📊 Summary
